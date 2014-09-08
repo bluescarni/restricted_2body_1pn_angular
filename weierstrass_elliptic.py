@@ -29,11 +29,19 @@ class weierstrass_elliptic(object):
 		# NOTE: this was the original function used for root finding.
 		# proots, err = polyroots([a,0,c,d],error=True,maxsteps=5000000)
 		# Computation of the cubic roots.
-		# TODO special casing.
 		u_list = [mpf(1),mpc(-1,sqrt(3))/2,mpc(-1,-sqrt(3))/2]
 		Delta0 = -3 * a * c
 		Delta1 = 27 * a * a * d
-		C = cbrt((Delta1 + sqrt(Delta1 * Delta1 - 4 * Delta0 * Delta0 * Delta0)) / 2)
+		# Here we have two choices for the value from sqrt, positive or negative. Since C
+		# is used as a denominator below, we pick the choice with the greatest absolute value.
+		# http://en.wikipedia.org/wiki/Cubic_function
+		# This should handle the case g2 = 0 gracefully.
+		C1 = cbrt((Delta1 + sqrt(Delta1 * Delta1 - 4 * Delta0 * Delta0 * Delta0)) / 2)
+		C2 = cbrt((Delta1 - sqrt(Delta1 * Delta1 - 4 * Delta0 * Delta0 * Delta0)) / 2)
+		if abs(C1) > abs(C2):
+			C = C1
+		else:
+			C = C2
 		proots = [(-1 / (3 * a)) * (u * C + Delta0 / (u * C)) for u in u_list]
 		# NOTE: we ignore any residual imaginary part that we know must come from numerical artefacts.
 		if Delta < 0:
